@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "outDir": "./build", /* Redirect output structure to the directory. */
+    "rootDir": "./src", 
+    "sourceMap": true,                     /* Generates corresponding '.map' file. */
+    // "outFile": "./",                       /* Concatenate and emit output to single file. */
+    "composite": true,                     /* Enable project compilation */
+    "tsBuildInfoFile": "./",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": false, // 将每个文件作为单独的模块
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "awesomeTypescriptLoaderOptions": {
+    "transpileOnly": true
+  },
+  "include": [
+    "src"
+  ]
+}

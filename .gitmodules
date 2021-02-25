@@ -1,0 +1,3 @@
+[submodule "src/admin-types"]
+	path = src/admin-types
+	url = https://github.com/melunar/admin-types.git
