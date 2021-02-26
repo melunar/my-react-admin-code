@@ -3,15 +3,15 @@ import express, { Request, Response, Application } from 'express'
 import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
 import bodyparser, { OptionsUrlencoded } from 'body-parser'
+// import { applicationStartMessage, mongodbLinkPath, routerDomain } from './shared/config'
+// import adminRoute from './routes/admin'
 import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
 import adminRoute from '@/routes/admin'
-// import User from "./admin-types/modules/User"
 
-// const responseBody: ResponseCodeEnum = 200
-// const user: User = {
-//   userName: '100',
-// }
-// console.log(responseBody)
+// import path from 'path'
+// import moduleAlias from 'module-alias'
+// moduleAlias.addAlias('@', path.resolve(__dirname, 'build'))
+
 /** app 创建 */
 const app: Application = express()
 app.get('/', (req: Request, res: Response) => {
