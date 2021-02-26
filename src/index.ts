@@ -1,13 +1,30 @@
+import 'module-alias/register'
 import express, { Request, Response, Application } from 'express'
 import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
-import { applicationStartMessage, mongodbLinkPath } from './shared/util'
+import bodyparser, { OptionsUrlencoded } from 'body-parser'
+import { applicationStartMessage, mongodbLinkPath, routerDomain } from './shared/config'
+// import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
+// import User from "./admin-types/modules/User"
 
+// const responseBody: ResponseCodeEnum = 200
+// const user: User = {
+//   userName: '100',
+// }
+// console.log(responseBody)
 /** app 创建 */
 const app: Application = express()
 app.get('/', (req: Request, res: Response) => {
   res.send('my admin server')
 })
+
+/** bodyParse设置 给request参数添加body属性 获取请求参数 response参数添加json方法相应请求
+兼容数据格式:application/json类型接口 */
+app.use(bodyparser.urlencoded({ extended: false } as OptionsUrlencoded))
+app.use(bodyparser.json())
+
+/** 路由装载 */
+// app.use(routerDomain.admin)
 
 /** 生产环境端口 */
 const productionPort: number = 3030
