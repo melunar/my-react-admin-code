@@ -3,8 +3,8 @@ import express, { Request, Response, Application } from 'express'
 import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
 import bodyparser, { OptionsUrlencoded } from 'body-parser'
-import { applicationStartMessage, mongodbLinkPath, routerDomain } from './shared/config'
-// import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
+import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
+import adminRoute from '@/routes/admin'
 // import User from "./admin-types/modules/User"
 
 // const responseBody: ResponseCodeEnum = 200
@@ -24,7 +24,7 @@ app.use(bodyparser.urlencoded({ extended: false } as OptionsUrlencoded))
 app.use(bodyparser.json())
 
 /** 路由装载 */
-// app.use(routerDomain.admin)
+app.use(routerDomain.admin, adminRoute)
 
 /** 生产环境端口 */
 const productionPort: number = 3030
