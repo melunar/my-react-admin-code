@@ -3,8 +3,6 @@ import express, { Request, Response, Application } from 'express'
 import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
 import bodyparser, { OptionsUrlencoded } from 'body-parser'
-// import { applicationStartMessage, mongodbLinkPath, routerDomain } from './shared/config'
-// import adminRoute from './routes/admin'
 import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
 import adminRoute from '@/routes/admin'
 
