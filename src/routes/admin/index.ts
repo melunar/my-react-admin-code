@@ -61,6 +61,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req,res, next) => {
       tipQA = '',
       email = '',
       age = 0,
+      sex = 0,
       realName = '',
     } = body
     const lastUser = await UserModel.find({}).sort({ _id: -1 }).limit(1);
@@ -77,7 +78,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req,res, next) => {
       id: newUserId,
       userName,
       password,
-      sex: Sex.UNKNOW,
+      sex,
       age,
       tipQA,
       email,

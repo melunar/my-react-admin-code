@@ -13,6 +13,7 @@
     "startWithBabelNode": "babel-node test.js",
     "pm2": "pm2 start ./src/start.js --watch --name 3301 && pm2 log",
     "pm2Stop": "pm2 stop 3301",
+    "deploy": "scp -r ./dist/* root@121.37.158.0:/data/my-admin-serve-3030",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -54,6 +55,7 @@
     "babel-loader": "^8.2.2",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
+    "express-cors": "0.0.3",
     "minimist": "^1.2.5",
     "nodemon": "^2.0.7",
     "start-server-webpack-plugin": "^2.2.5",
