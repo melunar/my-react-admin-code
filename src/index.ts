@@ -1,4 +1,4 @@
-import 'module-alias/register' // !!打包之前 注释这行
+// import 'module-alias/register' // !!打包之前 注释这行
 import express, { Request, Response, Application } from 'express'
 import cors from 'express-cors'
 import minimist from 'minimist'
@@ -29,7 +29,7 @@ app.get('/', (req: Request, res: Response) => {
 // });
 app.use(cors({
   allowedOrigins: [
-    'localhost:3000', 'admin.lalapkp.cn'
+    'localhost:3000', 'my-admin.lalapkp.cn'
   ]
 }))
 
