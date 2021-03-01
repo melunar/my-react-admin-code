@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/index.ts --env=dev",
     "build-js": "tsc",
-    "build": "webpack",
+    "build": "node ./build-fix.js && webpack",
     "build3": "rm -rf ./dist && node ./scripts/build.js",
     "build2": "webpack --config ./scripts/build.js",
     "build-js-dev": "tsc && node ./build/index.js",

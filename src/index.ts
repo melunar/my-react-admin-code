@@ -1,4 +1,4 @@
-// import 'module-alias/register' // !!打包之前 注释这行
+import 'module-alias/register' // !!打包之前 注释这行
 import express, { Request, Response, Application } from 'express'
 import cors from 'express-cors'
 import minimist from 'minimist'
@@ -46,9 +46,9 @@ const productionPort: number = 3030
 const args = minimist(process.argv.slice(2))
 const { env } = args
 const isDev: boolean = env === 'dev'
-if (isDev) {
-  require('module-alias/register')
-}
+// if (isDev) {
+//   require('module-alias/register')
+// }
 const port: number = isDev ? 3031 : productionPort // 端口号
 // process.argv.forEach((val, index) => {
 //   console.log(`${index}: ${val}`)
