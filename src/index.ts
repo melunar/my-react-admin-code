@@ -3,6 +3,7 @@ import express, { Request, Response, Application } from 'express'
 import cors from 'express-cors'
 import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
+import cookieParser from 'cookie-parser'
 import bodyparser, { OptionsUrlencoded } from 'body-parser'
 import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
 import adminRoute from '@/routes/admin'
@@ -32,6 +33,8 @@ app.use(cors({
     'localhost:3000', 'my-admin.lalapkp.cn'
   ]
 }))
+
+app.use(cookieParser())
 
 /** bodyParse设置 给request参数添加body属性 获取请求参数 response参数添加json方法相应请求
 兼容数据格式:application/json类型接口 */

@@ -1,9 +1,21 @@
-import { Router } from 'express'
-import { getRequestBody, defaultResponseBody } from '@/shared/utils'
+import { Router, Request, Response } from 'express'
+import session, { SessionOptions } from 'express-session'
+import SessionFileStore from 'session-file-store'
+import Cookies from 'cookie-parser'
+import { getRequestBody, defaultResponseBody, getUuid } from '@/shared/utils'
 import UserModel from '@/models/user'
-import User, { AddUserRequestOptions, DeleteUserRequestOptions, Sex, AdminRole, AppRole } from '@/admin-types/modules/User'
+import User, {
+  AddUserRequestOptions,
+  DeleteUserRequestOptions,
+  Sex,
+  AdminRole,
+  AppRole,
+  UserLoginRequestOptions,
+} from '@/admin-types/modules/User'
 import { AdminInterfaceUrlMapper } from '@/admin-types/common/Url_Admin'
 import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
+
+// todo MD5 password
 
 const router = Router()
 
@@ -15,13 +27,67 @@ router.use((req, res, next) => {
   next()
 })
 
+var FileStore = SessionFileStore(session)
+const identityKey = 'testKey'
+router.use(session({
+  name: identityKey,
+  secret: 'haoyong', // 用来对session id相关的cookie进行签名
+  store: new FileStore(), // 本地存储session（文本文件，也可以选择其他store，比如redis的）
+  saveUninitialized: false, // 是否自动保存未初始化的会话，建议false
+  resave: false, // 是否每次都重新保存会话，建议false
+  cookie: {
+    maxAge:  60 * 1000 * 300 // 有效期，单位是毫秒
+  },
+} as SessionOptions))
+
 router.get('/test', (req, res, next) => {
   res.send('get test')
 })
 
+/** 登陆 */
+router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Response, next) => {
+  const body = getRequestBody(req) as UserLoginRequestOptions
+  if (!body.userName) {
+    Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '请输入账户名' })
+    res.json(responseBody)
+  } else if (!body.password) {
+    Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '请输入密码' })
+    res.json(responseBody)
+  }
+  UserModel.findOne({ userName: body.userName }).then((user: any) => {
+    if (!user) {
+      Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '用户不存在' })
+      res.json(responseBody)
+    } else {
+      // 用户存在
+      if (user.password !== body.password) {
+        // 密码错误
+        Object.assign(responseBody, { code: ResponseCodeEnum.USER_UNAUTHORIZED, message: '密码错误' } )
+        res.json(responseBody)
+      } else {
+        // 成功
+        /** 把所有用户的登陆信息存储在 sessionMapper 中：{ user1: sessionId1, user2: sessionId2 .... } */
+        const { sessionMapper = {} } = req.session as any
+        const uuid = getUuid()
+        sessionMapper[user.userName] = uuid
+        console.log(`session input => userName:${user.userName}, value:${uuid}`);
+        (req.session as any).sessionMapper = sessionMapper
+        /** 更新session完成 */
+        Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '登陆成功', data: { user, token: uuid } } )
+        // 成功返回
+        res.json(responseBody)
+      }
+    }
+  })
+})
+
 /** 接口：用户添加 */
-router.post(AdminInterfaceUrlMapper.USER_ADD, async (req,res, next) => {
+router.post(AdminInterfaceUrlMapper.USER_ADD, async (req: Request, res: Response, next) => {
   const body = getRequestBody(req) as AddUserRequestOptions
+  // const { cookies: Cookies } = req
+  const sess = (req.session as any)
+  console.log(sess.sessionMapper)
+
   const errorMessageMapper = {
     noUserName: 'userName 不能为空',
     userNameOutLength: 'userName 长度不能超过20个字符',
@@ -29,6 +95,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req,res, next) => {
     noPassportConfirm: '验证密码不能为空',
     passportAndPassportConfirmNotEqual: '密码和验证密码不相等',
   }
+  // 权限判断
   // ❌错误处理❌
   if (!body.userName) {
     Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: errorMessageMapper.noUserName })
@@ -64,6 +131,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req,res, next) => {
       sex = 0,
       realName = '',
     } = body
+    // 取最后一个用户
     const lastUser = await UserModel.find({}).sort({ _id: -1 }).limit(1);
     // 用户id 1000 起步
     let newUserId: number = 1000
@@ -97,7 +165,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req,res, next) => {
   }
 })
 /** 接口：用户列表 */
-router.get(AdminInterfaceUrlMapper.USER_LIST, (req,res, next) => {
+router.get(AdminInterfaceUrlMapper.USER_LIST, (req: Request, res: Response, next) => {
   UserModel.find({}, '').then(users => {
     Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '成功', data: {
       list: users,
