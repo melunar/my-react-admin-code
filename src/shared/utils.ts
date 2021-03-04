@@ -1,5 +1,7 @@
 import { Request } from 'express'
 import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
+import expressJwt from 'express-jwt'
+import { secretKey } from '@/shared/config'
 
 export const getRequestBody = (req: Request): any => {
   const body = req.body
@@ -26,4 +28,15 @@ export const getUuid = function (): string {
   s[8] = s[13] = s[18] = s[23] = '-'
   const _uuid = s.join('')
   return _uuid
+}
+
+/** 
+ *  md5
+ *  let md5 = crypto.createHash('md5');
+    return md5.update(pwd).digest('hex');
+ */
+
+/** token 验证「中间件」*/
+export const jwtAuth = (): void => {
+  expressJwt({ secret: secretKey, algorithms: [] }) //.unless({path:['/index/load']})
 }

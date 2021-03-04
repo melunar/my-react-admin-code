@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express'
-import session, { SessionOptions } from 'express-session'
-import SessionFileStore from 'session-file-store'
-import Cookies from 'cookie-parser'
-import { getRequestBody, defaultResponseBody, getUuid } from '@/shared/utils'
+// import session, { SessionOptions } from 'express-session'
+// import SessionFileStore from 'session-file-store'
+// import Cookies from 'cookie-parser'
+import jsonwebtoken from 'jsonwebtoken'
+import { getRequestBody, defaultResponseBody, getUuid, jwtAuth } from '@/shared/utils'
 import UserModel from '@/models/user'
 import User, {
   AddUserRequestOptions,
@@ -14,12 +15,26 @@ import User, {
 } from '@/admin-types/modules/User'
 import { AdminInterfaceUrlMapper } from '@/admin-types/common/Url_Admin'
 import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
+import { secretKey } from '@/shared/config'
 
 // todo MD5 password
 
 const router = Router()
 
-const responseBody = defaultResponseBody
+/** 注册token配置文件 */
+// router.use(jwtAuth)
+
+/** // 如果token过期或者 错误的处理(结尾附 过期和错误的代码区别) */
+// router.use((err: any, req: any, res: any, next: any) => {
+//   console.log('如果token过期或者')
+//   if (err.name === 'UnauthorizedError') {
+//     const responseBody = Object.assign(defaultResponseBody)
+//     Object.assign(responseBody, { code: ResponseCodeEnum.USER_UNAUTHORIZED, message: '非法token' })
+//     res.json(responseBody)
+//   } else {
+//     next()
+//   }
+// })
 
 /** 中间件 */
 router.use((req, res, next) => {
@@ -27,18 +42,18 @@ router.use((req, res, next) => {
   next()
 })
 
-var FileStore = SessionFileStore(session)
-const identityKey = 'testKey'
-router.use(session({
-  name: identityKey,
-  secret: 'haoyong', // 用来对session id相关的cookie进行签名
-  store: new FileStore(), // 本地存储session（文本文件，也可以选择其他store，比如redis的）
-  saveUninitialized: false, // 是否自动保存未初始化的会话，建议false
-  resave: false, // 是否每次都重新保存会话，建议false
-  cookie: {
-    maxAge:  60 * 1000 * 300 // 有效期，单位是毫秒
-  },
-} as SessionOptions))
+// var FileStore = SessionFileStore(session)
+// const identityKey = 'testKey'
+// router.use(session({
+//   name: identityKey,
+//   secret: 'haoyong', // 用来对session id相关的cookie进行签名
+//   store: new FileStore(), // 本地存储session（文本文件，也可以选择其他store，比如redis的）
+//   saveUninitialized: false, // 是否自动保存未初始化的会话，建议false
+//   resave: false, // 是否每次都重新保存会话，建议false
+//   cookie: {
+//     maxAge:  60 * 1000 * 300 // 有效期，单位是毫秒
+//   },
+// } as SessionOptions))
 
 router.get('/test', (req, res, next) => {
   res.send('get test')
@@ -47,6 +62,7 @@ router.get('/test', (req, res, next) => {
 /** 登陆 */
 router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Response, next) => {
   const body = getRequestBody(req) as UserLoginRequestOptions
+  const responseBody = Object.assign(defaultResponseBody)
   if (!body.userName) {
     Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '请输入账户名' })
     res.json(responseBody)
@@ -66,14 +82,26 @@ router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Respon
         res.json(responseBody)
       } else {
         // 成功
+
+        // 方案1
         /** 把所有用户的登陆信息存储在 sessionMapper 中：{ user1: sessionId1, user2: sessionId2 .... } */
-        const { sessionMapper = {} } = req.session as any
-        const uuid = getUuid()
-        sessionMapper[user.userName] = uuid
-        console.log(`session input => userName:${user.userName}, value:${uuid}`);
-        (req.session as any).sessionMapper = sessionMapper
+        // const { sessionMapper = {} } = req.session as any
+        // const uuid = getUuid()
+        // sessionMapper[user.userName] = uuid
+        // console.log(`session input => userName:${user.userName}, value:${uuid}`);
+        // (req.session as any).sessionMapper = sessionMapper
         /** 更新session完成 */
-        Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '登陆成功', data: { user, token: uuid } } )
+        // Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '登陆成功', data: { user, token: uuid } } )
+
+        // 方案2
+        let tokenObject: User = {
+          userName: (user as User).userName,
+          id: (user as User).id,
+        }
+        let token = jsonwebtoken.sign(tokenObject, secretKey, { expiresIn: 60 * 60 * 2 }) // 超时（s）：2h
+        console.log('---> new token, ', token)
+        Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '登陆成功', data: { user, token } } )
+
         // 成功返回
         res.json(responseBody)
       }
@@ -84,6 +112,7 @@ router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Respon
 /** 接口：用户添加 */
 router.post(AdminInterfaceUrlMapper.USER_ADD, async (req: Request, res: Response, next) => {
   const body = getRequestBody(req) as AddUserRequestOptions
+  const responseBody = Object.assign(defaultResponseBody)
   // const { cookies: Cookies } = req
   const sess = (req.session as any)
   console.log(sess.sessionMapper)
@@ -166,6 +195,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req: Request, res: Response
 })
 /** 接口：用户列表 */
 router.get(AdminInterfaceUrlMapper.USER_LIST, (req: Request, res: Response, next) => {
+  const responseBody = Object.assign(defaultResponseBody)
   UserModel.find({}, '').then(users => {
     Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '成功', data: {
       list: users,
@@ -176,7 +206,16 @@ router.get(AdminInterfaceUrlMapper.USER_LIST, (req: Request, res: Response, next
 })
 /** 接口：用户删除 */
 router.post(AdminInterfaceUrlMapper.USER_DELETE, (req,res, next) => {
+  const responseBody = Object.assign(defaultResponseBody)
   const body = getRequestBody(req) as DeleteUserRequestOptions
+  // token 处理
+  jsonwebtoken.verify(body.token, secretKey, function(err, decodedTokenObject) {
+    console.log('---> verify')
+    console.log(err)
+    console.log(decodedTokenObject)
+    // todo 校验用户token是否真实
+  })
+
   if (!body.id) {
     Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '请输入待删除用户' })
     res.json(responseBody)
