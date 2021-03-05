@@ -11,3 +11,6 @@ export const secretKey: string = 'admin-code-token-pub-key'
 export const routerDomain: { [key: string]: string } = {
   admin: '/admin/'
 }
+
+/** token 有效期 秒 「10小时」*/
+export const tokenExpiresIn = 60 * 60 * 10

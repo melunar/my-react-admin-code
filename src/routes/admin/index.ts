@@ -15,7 +15,7 @@ import User, {
 } from '@/admin-types/modules/User'
 import { AdminInterfaceUrlMapper } from '@/admin-types/common/Url_Admin'
 import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
-import { secretKey } from '@/shared/config'
+import { secretKey, tokenExpiresIn } from '@/shared/config'
 
 // todo MD5 password
 
@@ -98,7 +98,7 @@ router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Respon
           userName: (user as User).userName,
           id: (user as User).id,
         }
-        let token = jsonwebtoken.sign(tokenObject, secretKey, { expiresIn: 60 * 60 * 2 }) // 超时（s）：2h
+        let token = jsonwebtoken.sign(tokenObject, secretKey, { expiresIn: tokenExpiresIn }) // 超时（s）：2h
         console.log('---> new token, ', token)
         Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '登陆成功', data: { user, token } } )
 
