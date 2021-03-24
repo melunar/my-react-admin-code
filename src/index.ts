@@ -1,6 +1,6 @@
 import 'module-alias/register' // !!打包之前 注释这行
 import express, { Request, Response, Application } from 'express'
-import cors from 'express-cors'
+// import cors from 'express-cors'
 import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
 import cookieParser from 'cookie-parser'
@@ -18,22 +18,20 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello DST!')
 })
 
-/** 跨域允许 */
-// app.all('*', function(req, res, next) {
-//   console.log('111')
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "X-Requested-With");
-//   res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
-//   res.header("X-Powered-By",' 3.2.1')
-//   res.header("Content-Type", "application/json;charset=utf-8");
-//   next();
-// });
-app.use(cors({
-  allowedOrigins: [
-    'localhost:3000', 'my-admin.lalapkp.cn'
-    // '*'
-  ]
-}))
+/** 跨域和请求头处理 */
+app.all('*', (_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Content-Length, Authorization, Accept,X-Requested-With');
+  res.header('Access-Control-Allow-Methods','PUT,POST,GET,DELETE,OPTIONS');
+  res.header('X-Powered-By','express@4.17.1')
+  next()
+})
+/** cors 跨域 */
+// app.use(cors({
+//   allowedOrigins: [
+//     'localhost:3000', 'my-admin.lalapkp.cn'
+//   ]
+// }))
 
 app.use(cookieParser())
 
