@@ -5,7 +5,7 @@ import minimist from 'minimist'
 import mongoose, { ConnectOptions } from 'mongoose'
 import cookieParser from 'cookie-parser'
 import bodyparser, { OptionsUrlencoded } from 'body-parser'
-import { applicationStartMessage, mongodbLinkPath, routerDomain } from '@/shared/config'
+import { applicationStartMessage, mongodbLinkPath, routerDomain, devPort, proPort } from '@/shared/config'
 import adminRoute from '@/routes/admin'
 
 // import path from 'path'
@@ -15,7 +15,7 @@ import adminRoute from '@/routes/admin'
 /** app 创建 */
 const app: Application = express()
 app.get('/', (req: Request, res: Response) => {
-  res.send('my admin server')
+  res.send('Hello DST!')
 })
 
 /** 跨域允许 */
@@ -31,6 +31,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use(cors({
   allowedOrigins: [
     'localhost:3000', 'my-admin.lalapkp.cn'
+    // '*'
   ]
 }))
 
@@ -44,15 +45,13 @@ app.use(bodyparser.json())
 /** 路由装载 */
 app.use(routerDomain.admin, adminRoute)
 
-/** 生产环境端口 3030, 开发环境 3031 */
-const productionPort: number = 3030
 const args = minimist(process.argv.slice(2))
 const { env } = args
 const isDev: boolean = env === 'dev'
 // if (isDev) {
 //   require('module-alias/register')
 // }
-const port: number = isDev ? 3031 : productionPort // 端口号
+const port: number = isDev ? devPort : proPort // 端口号
 // process.argv.forEach((val, index) => {
 //   console.log(`${index}: ${val}`)
 // })

@@ -3,7 +3,7 @@ import { Router, Request, Response } from 'express'
 // import SessionFileStore from 'session-file-store'
 // import Cookies from 'cookie-parser'
 import jsonwebtoken from 'jsonwebtoken'
-import { getRequestBody, defaultResponseBody, getUuid, jwtAuth } from '@/shared/utils'
+import { getRequestBody, getDefaultResponseBody, getUuid, jwtAuth } from '@/shared/utils'
 import UserModel from '@/models/user'
 import User, {
   AddUserRequestOptions,
@@ -28,7 +28,7 @@ const router = Router()
 // router.use((err: any, req: any, res: any, next: any) => {
 //   console.log('如果token过期或者')
 //   if (err.name === 'UnauthorizedError') {
-//     const responseBody = Object.assign(defaultResponseBody)
+//     const responseBody = getDefaultResponseBody()
 //     Object.assign(responseBody, { code: ResponseCodeEnum.USER_UNAUTHORIZED, message: '非法token' })
 //     res.json(responseBody)
 //   } else {
@@ -39,6 +39,7 @@ const router = Router()
 /** 中间件 */
 router.use((req, res, next) => {
   // responseBody
+  console.log('---请求来了---', new Date())
   next()
 })
 
@@ -62,7 +63,7 @@ router.get('/test', (req, res, next) => {
 /** 登陆 */
 router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Response, next) => {
   const body = getRequestBody(req) as UserLoginRequestOptions
-  const responseBody = Object.assign(defaultResponseBody)
+  const responseBody = getDefaultResponseBody()
   if (!body.userName) {
     Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '请输入账户名' })
     res.json(responseBody)
@@ -112,7 +113,7 @@ router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Respon
 /** 接口：用户添加 */
 router.post(AdminInterfaceUrlMapper.USER_ADD, async (req: Request, res: Response, next) => {
   const body = getRequestBody(req) as AddUserRequestOptions
-  const responseBody = Object.assign(defaultResponseBody)
+  const responseBody = getDefaultResponseBody()
   // const { cookies: Cookies } = req
   const sess = (req.session as any)
   console.log(sess.sessionMapper)
@@ -195,7 +196,7 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req: Request, res: Response
 })
 /** 接口：用户列表 */
 router.get(AdminInterfaceUrlMapper.USER_LIST, (req: Request, res: Response, next) => {
-  const responseBody = Object.assign(defaultResponseBody)
+  const responseBody = getDefaultResponseBody()
   UserModel.find({}, '').then(users => {
     Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '成功', data: {
       list: users,
@@ -206,7 +207,7 @@ router.get(AdminInterfaceUrlMapper.USER_LIST, (req: Request, res: Response, next
 })
 /** 接口：用户删除 */
 router.post(AdminInterfaceUrlMapper.USER_DELETE, (req,res, next) => {
-  const responseBody = Object.assign(defaultResponseBody)
+  const responseBody = getDefaultResponseBody()
   const body = getRequestBody(req) as DeleteUserRequestOptions
   // token 处理
   jsonwebtoken.verify(body.token, secretKey, function(err, decodedTokenObject) {

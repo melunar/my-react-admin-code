@@ -1,3 +1,9 @@
+/** dev启动端口 */
+export const devPort: number = 3030
+
+/** pro启动端口 */
+export const proPort: number = 3030
+
 /** 启动信息 */
 export const applicationStartMessage: string = '程序启动..'
 

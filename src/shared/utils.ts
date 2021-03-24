@@ -10,6 +10,13 @@ export const getRequestBody = (req: Request): any => {
 }
 
 /** 默认请求返回数据包 */
+export const getDefaultResponseBody = () => ({
+  code: ResponseCodeEnum.RECEIVED,
+  message: '请求处理中...',
+  data: null
+})
+
+/** 默认请求返回数据包 */
 export const defaultResponseBody = {
   code: ResponseCodeEnum.RECEIVED,
   message: '请求处理中...',
