@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
 
 const jenkinsApplicationSchema: Schema = new mongoose.Schema({
+    userId: Number, /** 创建人 */
     projectName: String, /** 项目名称 */
     orgName: String, /** 组织名 */
     createSuccessTime: Number, /** 创建成功时间 */

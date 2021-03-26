@@ -98,6 +98,7 @@ router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Respon
         let tokenObject: DecodedTokenObject = {
           userName: ((user as User).userName) as string,
           id: ((user as User).id) as number,
+          adminRole: ((user as User).adminRole) as number
         }
         let token = jsonwebtoken.sign(tokenObject, secretKey, { expiresIn: tokenExpiresIn }) // 超时（s）：2h
         console.log('---> new token, ', token)

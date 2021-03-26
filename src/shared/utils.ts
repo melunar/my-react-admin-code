@@ -3,6 +3,7 @@ import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
 // import expressJwt from 'express-jwt'
 import { secretKey } from '@/shared/config'
 import jsonwebtoken, { VerifyErrors } from 'jsonwebtoken'
+// import { DecodedTokenObject } from '@/types/common'
 
 export const getRequestBody = (req: Request): any => {
   const body = req.body
