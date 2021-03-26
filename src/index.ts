@@ -6,7 +6,8 @@ import mongoose, { ConnectOptions } from 'mongoose'
 import cookieParser from 'cookie-parser'
 import bodyparser, { OptionsUrlencoded } from 'body-parser'
 import { applicationStartMessage, mongodbLinkPath, routerDomain, devPort, proPort } from '@/shared/config'
-import adminRoute from '@/routes/admin'
+import userRoute from '@/routes/admin/user'
+import jenkinsApplicationRoute from '@/routes/admin/jenkins_application'
 
 // import path from 'path'
 // import moduleAlias from 'module-alias'
@@ -41,7 +42,8 @@ app.use(bodyparser.urlencoded({ extended: false } as OptionsUrlencoded))
 app.use(bodyparser.json())
 
 /** 路由装载 */
-app.use(routerDomain.admin, adminRoute)
+app.use(routerDomain.admin.user, userRoute)
+app.use(routerDomain.admin.jenkinsApplication, jenkinsApplicationRoute)
 
 const args = minimist(process.argv.slice(2))
 const { env } = args

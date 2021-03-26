@@ -3,7 +3,7 @@ import { Router, Request, Response } from 'express'
 // import SessionFileStore from 'session-file-store'
 // import Cookies from 'cookie-parser'
 import jsonwebtoken from 'jsonwebtoken'
-import { getRequestBody, getDefaultResponseBody, getUuid, jwtAuth } from '@/shared/utils'
+import { getRequestBody, getDefaultResponseBody } from '@/shared/utils'
 import UserModel from '@/models/user'
 import User, {
   AddUserRequestOptions,
@@ -39,7 +39,7 @@ const router = Router()
 /** 中间件 */
 router.use((req, res, next) => {
   // responseBody
-  console.log('---请求来了---', new Date())
+  console.log('---user 请求来了---', new Date())
   next()
 })
 
@@ -95,9 +95,9 @@ router.post(AdminInterfaceUrlMapper.USER_LOGIN, async (req: Request, res: Respon
         // Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '登陆成功', data: { user, token: uuid } } )
 
         // 方案2
-        let tokenObject: User = {
-          userName: (user as User).userName,
-          id: (user as User).id,
+        let tokenObject: DecodedTokenObject = {
+          userName: ((user as User).userName) as string,
+          id: ((user as User).id) as number,
         }
         let token = jsonwebtoken.sign(tokenObject, secretKey, { expiresIn: tokenExpiresIn }) // 超时（s）：2h
         console.log('---> new token, ', token)

@@ -14,9 +14,16 @@ export const mongodbLinkPath: string = 'mongodb://121.37.158.0:27017/my-admin-te
 export const secretKey: string = 'admin-code-token-pub-key'
 
 /** 路由域名 */
-export const routerDomain: { [key: string]: string } = {
-  admin: '/admin/'
+export const routerDomain: { [key: string]: {
+  user: string;
+  jenkinsApplication: string;
+} } = {
+  admin: {
+    user: '/admin/user',
+    jenkinsApplication: '/admin/jenkins-application',
+  }
 }
 
 /** token 有效期 秒 「10小时」*/
 export const tokenExpiresIn = 60 * 60 * 10
+// export const tokenExpiresIn = 10

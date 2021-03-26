@@ -1,7 +1,8 @@
 import { Request } from 'express'
 import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
-import expressJwt from 'express-jwt'
+// import expressJwt from 'express-jwt'
 import { secretKey } from '@/shared/config'
+import jsonwebtoken, { VerifyErrors } from 'jsonwebtoken'
 
 export const getRequestBody = (req: Request): any => {
   const body = req.body
@@ -44,6 +45,55 @@ export const getUuid = function (): string {
  */
 
 /** token 验证「中间件」*/
-export const jwtAuth = (): void => {
-  expressJwt({ secret: secretKey, algorithms: [] }) //.unless({path:['/index/load']})
+// export const jwtAuth = (): void => {
+//   expressJwt({ secret: secretKey, algorithms: [] }) //.unless({path:['/index/load']})
+// }
+
+/**
+ * 获取并校验 token 是否合法（存在且未过期）
+ * 不对用户变动导致的问题做校验，服务应该在用户删除或致命属性变动时，强制使其token失效
+ * @param req 请求头
+ * @returns promise
+ */
+export const getAndVerifyToken = function (req: Request): Promise<{
+  code: ResponseCodeEnum;
+  message: string;
+  data?: DecodedTokenObject | undefined;
+}> {
+  const token: string = req.headers['authorization'] || ''
+  return new Promise((resolve, reject) => {
+    if (!token) {
+      reject({
+        code: ResponseCodeEnum.USER_UNAUTHORIZED,
+        message: '用户未认证'
+      })
+    } else {
+      jsonwebtoken.verify(token, secretKey, {}, function(err: (VerifyErrors | null), decoded) {
+        if (err) {
+          if (err && err.name === 'TokenExpiredError') {
+            console.log('jsonwebtoken err.....---- 过期')
+            reject({
+              code: ResponseCodeEnum.USER_AUTHORIZED_EXPIRED,
+              message: '用户认证过期'
+            })
+          } else {
+            console.log('jsonwebtoken err.....---- 无效')
+            reject({
+              code: ResponseCodeEnum.USER_AUTHORIZED_INVALID,
+              message: '无效用户认证'
+            })
+          }
+        } else {
+          const data = Object.assign({}, decoded) as DecodedTokenObject
+          if (data && data.userName && data.id) {
+            resolve({
+              code: ResponseCodeEnum.SUCCESS,
+              message: `token 有效：${JSON.stringify(data)}`,
+              data
+            })
+          }
+        }
+      })
+    }
+  })
 }
