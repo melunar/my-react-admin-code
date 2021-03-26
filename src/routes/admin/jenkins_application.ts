@@ -102,10 +102,13 @@ router.get(JA_SEARCH.url, (req: Request, res: Response, next) => {
   const params = (req.query) as JA_PROTOCOL_SCHEMA.JA_SEARCH.REQUEST
   const { projectName = '', status: projectStatus = 0 } = params
   const responseBody = getDefaultResponseBody()
-  const { tokenObject: { id: userId, userName } } = req as unknown as RequestWithTokenObject
+  const { tokenObject: { id: userId, userName, adminRole } } = req as unknown as RequestWithTokenObject
   console.log('userId', userId, userName)
   // projectName：利用正则语法 实现模糊查询
-  const findParam: any = { userId, projectName: RegExp(projectName) }
+  const findParam: any = { projectName: RegExp(projectName) }
+  if (adminRole !== AdminRole.ADMIN) { // 管理员查看所有数据 非管理员只查询对应userId数据
+    findParam.userId = userId
+  }
   if (projectStatus) findParam.status = projectStatus
   console.log('findParam', findParam)
   JenkinsApplicationModel.find(findParam, '').sort({ _id: -1 /* _id=>时间倒叙 */}).then(ja_list => {
