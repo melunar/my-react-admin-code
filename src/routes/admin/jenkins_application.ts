@@ -1,6 +1,7 @@
+import http from 'http'
 import { Router, Request, Response } from 'express'
 import { getRequestBody, getDefaultResponseBody, defaultResponseBody, getAndVerifyToken } from '@/shared/utils'
-import JenkinsApplicationModel from '@/models/jenkins_application'
+import JenkinsApplicationModel, { BuildLogModel } from '@/models/jenkins_application'
 import { JA } from '@/admin-types/modules/JenkinsApplication'
 import { AdminRole } from '@/admin-types/modules/User'
 import { JA_PROTOCOL, JA_PROTOCOL_SCHEMA } from '@/admin-types/modules/JenkinsApplication.proto'
@@ -9,7 +10,7 @@ import { ResponseCodeEnum } from '@/admin-types/common/ResponseCodeEnum'
 const router = Router()
 
 /** 接口 */
-const { JA_ADD, JA_SEARCH, JA_RECEIVE, JA_SUCCESS } = JA_PROTOCOL
+const { JA_ADD, JA_SEARCH, JA_RECEIVE, JA_SUCCESS, JA_BUILD } = JA_PROTOCOL
 
 /** 中间件 */
 router.use(async (_req: Request, _res: Response, next) => {
@@ -145,7 +146,7 @@ router.post(JA_RECEIVE.url, (req: Request, res: Response, next) => {
   })
 })
 
-/** 接口：成功 */
+/** 接口：标记成功 */
 router.post(JA_SUCCESS.url, (req: Request, res: Response, next) => {
   const params = (getRequestBody(req)) as JA_PROTOCOL_SCHEMA.JA_SUCCESS.REQUEST
   const responseBody = getDefaultResponseBody()
@@ -178,6 +179,52 @@ router.post(JA_SUCCESS.url, (req: Request, res: Response, next) => {
     res.json(responseBody)
   }).catch(() => {
     Object.assign(responseBody, { code: ResponseCodeEnum.SERVICE_ERROR, message: '检索_id失败', data: null })
+    res.json(responseBody)
+  })
+})
+
+/** 接口：构建任务发起 （暂未做权限认证 所有人都可以发起） */
+router.post(JA_BUILD.url, (req: Request, res: Response, next) => {
+  const params = (getRequestBody(req)) as JA_PROTOCOL_SCHEMA.JA_BUILD.REQUEST
+  const responseBody = getDefaultResponseBody()
+  const { projectName, projectId, branch,  remark = '' } = params
+  // 参数校验
+  if (!projectName) { // 此处采用项目名 而不是id 因为Jenkins使用的是名称 简单就好~
+    Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '项目名不能为空' })
+    return res.json(responseBody)
+  }
+  if (!projectId) { // 用于记录
+    Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '项目ID不能为空' })
+    return res.json(responseBody)
+  }
+  if (!branch) {
+    Object.assign(responseBody, { code: ResponseCodeEnum.INVALID_PARAMETER, message: '项目分支不能为空' })
+    return res.json(responseBody)
+  }
+  const { tokenObject: { id: userId, userName, adminRole } } = req as unknown as RequestWithTokenObject
+
+  http.get(`http://121.37.158.0:8080/job/${projectName}/buildWithParameters?token=${'vue3-mall-structure-token'}&branch=${branch}&remark=${remark}`, () => {
+    const logItem: JA.BuildLog = {
+      userName,
+      userId,
+      projectName,
+      projectId,
+      branch,
+      remark,
+      status: 0,
+      dateTime: new Date().getTime()
+    }
+    // 添加构建日志
+    const logModel = new BuildLogModel(logItem)
+    logModel.save().then((log) => {
+      Object.assign(responseBody, { code: ResponseCodeEnum.SUCCESS, message: '项目构建下发成功，可查看', data: log })
+      res.json(responseBody)
+    }).catch(() => {
+      Object.assign(responseBody, { code: ResponseCodeEnum.SERVICE_ERROR, message: '项目构建下发成功，但是日志添加失败', data: null })
+      res.json(responseBody)
+    })
+  }).on('error', (_err) => {
+    Object.assign(responseBody, { code: ResponseCodeEnum.SERVICE_ERROR, message: '构建失败, 请检查Jenkins服务', data: null })
     res.json(responseBody)
   })
 })
