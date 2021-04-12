@@ -7,8 +7,8 @@ export const proPort: number = 3030
 /** 启动信息 */
 export const applicationStartMessage: string = '程序启动..'
 
-/** 数据库连接地址 */
-export const mongodbLinkPath: string = 'mongodb://121.37.158.0:27017/my-admin-test'
+/** 数据库连接地址 使用admin验证用户 */
+export const mongodbLinkPath: string = 'mongodb://root:root121@121.37.158.0:27017/my-admin-test?authSource=admin'
 
 /** token 加密公共部分 */
 export const secretKey: string = 'admin-code-token-pub-key'

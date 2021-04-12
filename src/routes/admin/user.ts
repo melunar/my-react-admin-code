@@ -116,8 +116,8 @@ router.post(AdminInterfaceUrlMapper.USER_ADD, async (req: Request, res: Response
   const body = getRequestBody(req) as AddUserRequestOptions
   const responseBody = getDefaultResponseBody()
   // const { cookies: Cookies } = req
-  const sess = (req.session as any)
-  console.log(sess.sessionMapper)
+  // const sess = (req.session as any)
+  // console.log(sess.sessionMapper)
 
   const errorMessageMapper = {
     noUserName: 'userName 不能为空',

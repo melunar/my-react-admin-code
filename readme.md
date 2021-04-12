@@ -29,3 +29,25 @@ tsc打包: `npm run build`, 生成的js项目在`build`文件夹内
 
 1. 引入webpack打包build项目并进行部署
 2. 模块别名的使用
+
+## MONGO SERVE
+
+启动常驻后台
+`mongod -f /etc/mongo.conf --fork` (推荐用配置文件启动)
+` mongod --dbpath=/var/lib/mongo --logpath=/var/log/mongodb/mongod.log --fork`
+
+查看配置
+`cat /etc/etc/mongo.conf`
+
+安全验证
+
+```
+> mongo # 进入mongo交互式命令行
+> use admin #进入admin数据库
+  switched to db admin
+> db.createUser( {user: "root",pwd: "password",roles: [ { role: "root", db: "admin" } ]}) # 在系统 admin database 上创建用户并指定密码
+> db.shutdownServer() # 退出mongo
+
+> vim /etc/mongo.conf # 编辑配置文件，配置 auth=true 启用链接认证
+> mongod -f /etc/mongo.conf --fork # 重启服务
+```
